@@ -1,3 +1,8 @@
 {
-    "C_Cpp.errorSquiggles": "Disabled"
+    "C_Cpp.errorSquiggles": "Disabled",
+    "files.associations": {
+        "forward_list": "cpp",
+        "list": "cpp",
+        "xmemory": "cpp"
+    }
 }

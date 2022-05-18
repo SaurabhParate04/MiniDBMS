@@ -55,23 +55,70 @@ void createTable(vector<string> cmd)
         return;
     }
 
+    bool success = true;
+
     while (start < end - 1)
     {
         start++;
         if (cmd[start] != ",")
         {
+            if((start - 5) % 3 == 0) 
+            {
+                if(!(cmd[start] == "INT" || cmd[start] == "STR")) 
+                {
+                    cout<<"Invalid data type: "<<cmd[start]<<endl;
+                    cout<<"Table not created"<<endl;
+                    success = false;
+                    break;
+                }
+            }
             schemafile << "#" << cmd[start];
         }
     }
     schemafile << endl;
-    cout << "Table created successfully" << endl;
+    
+    if(success) 
+    {
+        cout << "Table created successfully" << endl;
+        schemafile.close();
+    }
+    else 
+    {
+        fstream temp;
+        temp.open("temp.txt", ios::out);
 
-    schemafile.close();
+        string line;
+        while (getline(schemafile, line))
+        {
+            string l1 = line.substr(0, line.find('#'));
+            if (table_name != l1)
+            {
+                temp << line << endl;
+            }
+        }
+
+        schemafile.close();
+        temp.close();
+
+        remove("Schema.txt");
+        rename("temp.txt", "Schema.txt");
+
+        string f = table_name + ".txt";
+        char fileName[f.length()];
+
+        for (int i = 0; i < f.length(); i++)
+        {
+            fileName[i] = f[i];
+        }
+        fileName[f.length()] = '\0';
+
+        // cout<<fileName<<endl;
+        remove(fileName);
+    }
 }
 
 void dropTable(vector<string> cmd)
 {
-
     string table_name = cmd[2];
     if (!checkTable(table_name))
     {
@@ -115,6 +162,7 @@ void dropTable(vector<string> cmd)
 
     cout << "Table dropped successfully" << endl;
 }
+
 void describe(vector<string> cmd)
 {
     schemafile.open("Schema.txt", ios::in);
@@ -157,7 +205,7 @@ void describe(vector<string> cmd)
     }
     else
     {
-        cout << "please mention table name" << endl;
+        cout << "Please mention table name" << endl;
     }
     schemafile.close();
 }
@@ -930,23 +978,18 @@ void handleCmd(vector<string> cmd)
 
 int main()
 {
-
     vector<string> cmd;
     string input;
-
-    cout << "Grp14-DMS>";
-
     getline(cin, input);
 
     while (input != "q")
     {
-
         convertToVector(input, cmd);
+        // for(auto it=cmd.begin(); it!=cmd.end(); it++) cout<<*it<<endl;
+
         handleCmd(cmd);
 
         cmd.clear();
-        cout << "\nGrp14-DMS>";
-
         getline(cin, input);
     }
 
