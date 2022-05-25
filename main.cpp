@@ -202,6 +202,7 @@ void describe(vector<string> cmd)
                 }
             }
         }
+        cout<<endl;
     }
     else
     {
@@ -705,12 +706,13 @@ void select(vector<string> cmd)
                 getline(ss, substr, '#');
                 lineVec.push_back(substr);
             }
-            for (int i = 0; i < lineVec.size(); i++)
-            {
-                cout << "\t\t\t" << lineVec[i];
-            }
-
         }
+        for (int i = 0; i < lineVec.size(); i++)
+        {
+            cout << "\t\t\t" << lineVec[i];
+            if(i%2 != 0) cout<<endl;
+        }
+        cout<<endl;
     }
 
     else
@@ -727,6 +729,7 @@ void select(vector<string> cmd)
         else
         {
             cout << "Syntax error" << endl;
+            return;
         }
 
         int tablename_pos = index + 1; // position of table_name
@@ -753,13 +756,12 @@ void select(vector<string> cmd)
             table_attr[schema[i]] = k++;
         }
 
-        bool atterror = false;
         bool attError = false;
+
         for (auto x : attr_list)
         {
             if (table_attr.find(x) == table_attr.end())
             {
-                cout << "Attribute Error" << endl;
                 attError = true;
                 break;
             }
@@ -767,7 +769,7 @@ void select(vector<string> cmd)
 
         if (attError)
         {
-            cout << " Attribute Error" << endl;
+            cout << "Attribute Error" << endl;
             return;
         }
 
@@ -945,7 +947,7 @@ void handleCmd(vector<string> cmd)
     {
         helpTable();
     }
-    else if (cmd[0] == "help" && cmd[1] != "tables")
+    else if (cmd[0] == "help" && cmd[1] != "commands")
     {
         helpCmd(cmd);
     }
