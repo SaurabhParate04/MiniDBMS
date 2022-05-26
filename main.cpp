@@ -1,5 +1,8 @@
 #include <bits/stdc++.h>
+#include <windows.h>
 using namespace std;
+
+HANDLE console_color = GetStdHandle(STD_OUTPUT_HANDLE);
 
 fstream schemafile;
 
@@ -29,8 +32,24 @@ void createTable(vector<string> cmd)
 
     if (checkTable(table_name))
     {
-        cout << "Table Already Exists" << endl;
+        SetConsoleTextAttribute(console_color, 12);
+        cout << "Error: Table Already Exists" << endl;
+        SetConsoleTextAttribute(console_color, 15);
         return;
+    }
+
+    for(int i=0; i<cmd.size(); i++) 
+    {
+        if(i+1 > 5 && ((i+1) % 3) == 0) 
+        {
+            if(!(cmd[i] == "STR" || cmd[i] == "INT")) 
+            {
+                SetConsoleTextAttribute(console_color, 12);
+                cout<<"Error: Syntax Error: Missing data type "<<endl;
+                SetConsoleTextAttribute(console_color, 15);
+                return;
+            }
+        }
     }
 
     schemafile.open("Schema.txt", ios::app);
@@ -51,7 +70,9 @@ void createTable(vector<string> cmd)
 
     if (start == -1 || end == -1)
     {
-        cout << "Error" << endl;
+        SetConsoleTextAttribute(console_color, 12);
+        cout << "Error: Syntax Error" << endl;
+        SetConsoleTextAttribute(console_color, 15);
         return;
     }
 
@@ -66,8 +87,10 @@ void createTable(vector<string> cmd)
             {
                 if(!(cmd[start] == "INT" || cmd[start] == "STR")) 
                 {
-                    cout<<"Invalid data type: "<<cmd[start]<<endl;
+                    SetConsoleTextAttribute(console_color, 12);
+                    cout<<"Error: Invalid data type: "<<cmd[start]<<endl;
                     cout<<"Table not created"<<endl;
+                    SetConsoleTextAttribute(console_color, 15);
                     success = false;
                     break;
                 }
@@ -79,7 +102,9 @@ void createTable(vector<string> cmd)
     
     if(success) 
     {
+        SetConsoleTextAttribute(console_color, 10);
         cout << "Table created successfully" << endl;
+        SetConsoleTextAttribute(console_color, 15);
         schemafile.close();
     }
     else 
@@ -122,8 +147,10 @@ void dropTable(vector<string> cmd)
     string table_name = cmd[2];
     if (!checkTable(table_name))
     {
-        cout << "Table Not Exists" << endl;
+        SetConsoleTextAttribute(console_color, 12);
+        cout << "Error: Table Not Exists" << endl;
         return;
+        SetConsoleTextAttribute(console_color, 15);
     }
 
     schemafile.open("Schema.txt", ios::in);
@@ -160,7 +187,9 @@ void dropTable(vector<string> cmd)
     // cout<<fileName<<endl;
     remove(fileName);
 
+    SetConsoleTextAttribute(console_color, 10);
     cout << "Table dropped successfully" << endl;
+    SetConsoleTextAttribute(console_color, 15);
 }
 
 void describe(vector<string> cmd)
@@ -206,7 +235,9 @@ void describe(vector<string> cmd)
     }
     else
     {
-        cout << "Please mention table name" << endl;
+        SetConsoleTextAttribute(console_color, 12);
+        cout << "Error: Please mention table name" << endl;
+        SetConsoleTextAttribute(console_color, 15);
     }
     schemafile.close();
 }
@@ -234,7 +265,9 @@ void insert(vector<string> cmd)
     string table_name = cmd[2];
     if (!checkTable(table_name))
     {
-        cout << "Table Not Exists" << endl;
+        SetConsoleTextAttribute(console_color, 12);
+        cout << "Error: Table Does Not Exists" << endl;
+        SetConsoleTextAttribute(console_color, 15);
         return;
     }
     fstream table;
@@ -242,6 +275,40 @@ void insert(vector<string> cmd)
 
     vector<string> data;
     getDatatype(table_name, data);
+
+    vector<string> schema;
+
+    fetchSchema(cmd[2], schema);
+
+    int cols = 0;
+    for (int i = 1; i < schema.size(); i += 2)
+    {
+        cols++;
+    }
+
+    int cnt = 0;
+    for(int i=0; i<cmd.size(); i++) 
+    {
+        if(cmd[i] != ",") 
+        {
+            cnt++;
+        } 
+    }
+
+    if(cnt - 6 != cols) 
+    {
+        SetConsoleTextAttribute(console_color, 12);
+        if(cnt - 6 > cols) 
+        {
+            cout<<"Error: Too many arguments provided to insert function\nRequired: "<<cols<<" Provided: "<<cnt - 6<<endl;
+        }
+        else 
+        {
+            cout<<"Error: Too few arguments provided to insert function\nRequired: "<<cols<<" Provided: "<<cnt - 6<<endl;
+        }
+        SetConsoleTextAttribute(console_color, 15);
+        return;
+    }
 
     int start = -1, end = -1;
     for (int i = 4; i < cmd.size(); i++)
@@ -258,7 +325,9 @@ void insert(vector<string> cmd)
 
     if (start == -1 || end == -1)
     {
-        cout << "Error" << endl;
+        SetConsoleTextAttribute(console_color, 12);
+        cout << "Error: Syntax Error" << endl;
+        SetConsoleTextAttribute(console_color, 15);
         return;
     }
     int k = 0;
@@ -273,7 +342,9 @@ void insert(vector<string> cmd)
             if ((data[k] == "INT" && !is_number(cmd[st])) ||
                 (data[k] != "INT" && is_number(cmd[st])))
             {
-                cout << "Invalid Data Type " << cmd[st] << endl;
+                SetConsoleTextAttribute(console_color, 12);
+                cout << "Error: Invalid Data Type " << cmd[st] << endl;
+                SetConsoleTextAttribute(console_color, 15);
                 return;
             }
             k++;
@@ -297,6 +368,9 @@ void insert(vector<string> cmd)
             }
         }
     }
+    SetConsoleTextAttribute(console_color, 10);
+    cout << "Values inserted Successfully" << endl;
+    SetConsoleTextAttribute(console_color, 15);
 }
 
 void table_number(map<string, int> &table, vector<string> schema)
@@ -328,7 +402,9 @@ void update(vector<string> cmd)
 
     if (!checkTable(cmd[1]))
     {
-        cout << "Table Not Exists" << endl;
+        SetConsoleTextAttribute(console_color, 12);
+        cout << "Error: Table Does Not Exists" << endl;
+        SetConsoleTextAttribute(console_color, 15);
         return;
     }
 
@@ -388,6 +464,7 @@ void update(vector<string> cmd)
                 {
                     new_line += lineVec[i];
                     new_line += "#";
+                    changed = true;
                 }
                 new_line += lineVec[i];
                 temp << new_line << endl;
@@ -516,11 +593,15 @@ void update(vector<string> cmd)
         rename("temp.txt", c);
         if (changed)
         {
+            SetConsoleTextAttribute(console_color, 10);
             cout << "Rows updated successfully" << endl;
+            SetConsoleTextAttribute(console_color, 15);
         }
         else
         {
-            cout << "Value not Present" << endl;
+            SetConsoleTextAttribute(console_color, 12);
+            cout << "Error: Value not Present" << endl;
+            SetConsoleTextAttribute(console_color, 15);
         }
     }
 }
@@ -531,7 +612,9 @@ void delete_(vector<string> cmd)
     vector<string> schema;
     if (!checkTable(cmd[2]))
     {
-        cout << "Table Not Exists" << endl;
+        SetConsoleTextAttribute(console_color, 12);
+        cout << "Error: Table Does Not Exists" << endl;
+        SetConsoleTextAttribute(console_color, 15);
         return;
     }
     fetchSchema(cmd[2], schema);
@@ -545,7 +628,9 @@ void delete_(vector<string> cmd)
             char c[table.size() + 1];
             strcpy(c, table.c_str());
             remove(c);
+            SetConsoleTextAttribute(console_color, 10);
             cout << " Table deleted" << endl;
+            SetConsoleTextAttribute(console_color, 15);
         }
         else if (cmd[3] == "where")
         {
@@ -640,21 +725,27 @@ void delete_(vector<string> cmd)
             strcpy(c, table1.c_str());
             remove(c);
             rename("temp.txt", c);
-            cout << " rows deleted" << endl;
+            SetConsoleTextAttribute(console_color, 10);
+            cout << "Rows deleted successfully" << endl;
+            SetConsoleTextAttribute(console_color, 15);
         }
     }
 }
 
 void fetchTable(string &tableName, vector<string> &att, unordered_map<string, int> &mp,
-                vector<vector<string>> &d)
+                vector<vector<string>> &d, bool star)
 {
     fstream table(tableName + ".txt", ios::in);
     string line;
 
-    cout << "\n";
-    for (auto x : att)
-        cout << x << "\t";
-    cout << "\n\n";
+    if(!star) 
+    {
+        cout << "\n";
+            for (auto x : att)
+                cout << x << "\t";
+            cout << "\n\n";
+    }
+    
 
     while (getline(table, line))
     {
@@ -707,12 +798,102 @@ void select(vector<string> cmd)
                 lineVec.push_back(substr);
             }
         }
-        for (int i = 0; i < lineVec.size(); i++)
+
+        vector<string> attr_list;
+
+        auto it = find(cmd.begin(), cmd.end(), "from");
+        int index = 0; // finding the index of from clause
+
+        if (it != cmd.end())
         {
-            cout << "\t\t\t" << lineVec[i];
-            if(i%2 != 0) cout<<endl;
+            index = it - cmd.begin();
         }
-        cout<<endl;
+        else
+        {
+            SetConsoleTextAttribute(console_color, 12);
+            cout << "Error: Syntax error" << endl;
+            SetConsoleTextAttribute(console_color, 15);
+            return;
+        }
+
+        int tablename_pos = index + 1; // position of table_name
+
+        if (!checkTable(cmd[tablename_pos]))
+        {
+            SetConsoleTextAttribute(console_color, 12);
+            cout << "Error: Table Does Not Exists" << endl;
+            SetConsoleTextAttribute(console_color, 15);
+            return;
+        }
+
+        unordered_map<string, int> table_attr;
+        schema.clear();
+
+        fetchSchema(cmd[tablename_pos], schema);
+
+        int k = 0, cols = 0;
+        for (int i = 1; i < schema.size(); i += 2)
+        {
+            table_attr[schema[i]] = k++;
+            attr_list.push_back(schema[i]);
+            cols++;
+        }
+        // cout<<"cols: "<<cols<<endl;
+
+        bool attError = false;
+
+        for (auto x : attr_list)
+        {
+            if (table_attr.find(x) == table_attr.end())
+            {
+                attError = true;
+                break;
+            }
+        }
+
+        if (attError)
+        {
+            SetConsoleTextAttribute(console_color, 12);
+            cout << "Error: Attribute Error" << endl;
+            SetConsoleTextAttribute(console_color, 15);
+            return;
+        }
+
+        vector<vector<string>> data;
+        fetchTable(cmd[tablename_pos], attr_list, table_attr, data, true);
+
+        auto itw = find(cmd.begin(), cmd.end(), "where");
+        int indexofwhere = 0; // finding the index of where clause
+        if (itw != cmd.end())
+        {
+            indexofwhere = itw - cmd.begin();
+            string cnd_att = cmd[indexofwhere + 1];
+            string cnd = cmd[indexofwhere + 2];
+            string cnd_value = cmd[indexofwhere + 3];
+
+            int att_ind = table_attr[cnd_att];
+
+            for (int k = 0; k < data.size(); k++)
+            {
+                if ((cnd == "=" && data[k][att_ind] == cnd_value) || (cnd == ">" && data[k][att_ind] > cnd_value) || (cnd == "<" && data[k][att_ind] < cnd_value) || (cnd == ">=" && data[k][att_ind] >= cnd_value) || (cnd == "<=" && data[k][att_ind] <= cnd_value) || (cnd == "!=" && data[k][att_ind] != cnd_value))
+                {
+                    for (int i = 0; i < attr_list.size(); i++)
+                    {
+                        cout << data[k][table_attr[attr_list[i]]] << "\t";
+                    }
+                    cout << endl;
+                }
+            }
+        }
+        else
+        {
+            for (int i = 0; i < lineVec.size(); i++)
+            {
+                if(i%cols == 0) cout<<endl;
+                cout << "\t\t\t" << lineVec[i];
+            }
+            cout<<endl;
+        }
     }
 
     else
@@ -728,7 +909,9 @@ void select(vector<string> cmd)
         }
         else
         {
-            cout << "Syntax error" << endl;
+            SetConsoleTextAttribute(console_color, 12);
+            cout << "Error: Syntax error" << endl;
+            SetConsoleTextAttribute(console_color, 15);
             return;
         }
 
@@ -736,7 +919,9 @@ void select(vector<string> cmd)
 
         if (!checkTable(cmd[tablename_pos]))
         {
-            cout << "Table Not Exists" << endl;
+            SetConsoleTextAttribute(console_color, 12);
+            cout << "Error: Table Not Exists" << endl;
+            SetConsoleTextAttribute(console_color, 15);
             return;
         }
 
@@ -769,12 +954,14 @@ void select(vector<string> cmd)
 
         if (attError)
         {
-            cout << "Attribute Error" << endl;
+            SetConsoleTextAttribute(console_color, 12);
+            cout << "Error: Attribute Error" << endl;
+            SetConsoleTextAttribute(console_color, 15);
             return;
         }
 
         vector<vector<string>> data;
-        fetchTable(cmd[tablename_pos], attr_list, table_attr, data);
+        fetchTable(cmd[tablename_pos], attr_list, table_attr, data, false);
 
         auto itw = find(cmd.begin(), cmd.end(), "where");
         int indexofwhere = 0; // finding the index of where clause
@@ -828,7 +1015,9 @@ void helpTable()
     }
     if (!count)
     {
-        cout << "No tables found" << endl;
+        SetConsoleTextAttribute(console_color, 12);
+        cout << "Error: No tables found" << endl;
+        SetConsoleTextAttribute(console_color, 15);
     }
 }
 
@@ -880,7 +1069,9 @@ void helpCmd(vector<string> cmd)
         break;
 
     default:
-        cout << "Syntax Error";
+        SetConsoleTextAttribute(console_color, 12);
+        cout << "Error: Syntax Error"<<endl;
+        SetConsoleTextAttribute(console_color, 15);
     }
 }
 
@@ -927,7 +1118,9 @@ void fetchSchema(string tableName, vector<string> &schema)
     }
     if (flag == 0)
     {
-        cout << "table not found" << endl;
+        SetConsoleTextAttribute(console_color, 12);
+        cout << "Error: Table not found" << endl;
+        SetConsoleTextAttribute(console_color, 15);
     }
 
     schemafile.close();
@@ -974,7 +1167,9 @@ void handleCmd(vector<string> cmd)
 
     else
     {
-        cout << "Syntax Errors";
+        SetConsoleTextAttribute(console_color, 12);
+        cout << "Error: Syntax Error"<<endl;
+        SetConsoleTextAttribute(console_color, 15);
     }
 }
 
