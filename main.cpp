@@ -200,6 +200,7 @@ void describe(vector<string> cmd)
     {
         string table_name = cmd[1];
         string line;
+        bool found = false;
 
         while (getline(schemafile, line))
         {
@@ -216,7 +217,7 @@ void describe(vector<string> cmd)
                     {
                         if (cnt % 2 != 0)
                         {
-                            cout << "--";
+                            cout << "\t--\t";
                         }
                         else
                         {
@@ -229,17 +230,26 @@ void describe(vector<string> cmd)
                         cout << i;
                     }
                 }
-            }
+                found = true;
+                break;
+            } 
+        }
+        if(!found) 
+        {
+            SetConsoleTextAttribute(console_color, 12);
+            cout<<"Error: Table does not exist";
+            SetConsoleTextAttribute(console_color, 15);
         }
         cout<<endl;
     }
     else
     {
         SetConsoleTextAttribute(console_color, 12);
-        cout << "Error: Please mention table name" << endl;
+        cout << "Error: Please mention table name in describe command" << endl;
         SetConsoleTextAttribute(console_color, 15);
     }
     schemafile.close();
+    cout<<endl;
 }
 
 bool is_number(const std::string &s)
@@ -624,13 +634,13 @@ void delete_(vector<string> cmd)
     {
         if (cmd.size() == 3)
         {
-            string table = cmd[2] + ".txt";
-            char c[table.size() + 1];
-            strcpy(c, table.c_str());
-            remove(c);
+            string table_name = cmd[2] + ".txt";
+            fstream table;
+            table.open(table_name, ios::out | ios::trunc);
             SetConsoleTextAttribute(console_color, 10);
-            cout << " Table deleted" << endl;
+            cout << "Table deleted" << endl;
             SetConsoleTextAttribute(console_color, 15);
+            table.close();
         }
         else if (cmd[3] == "where")
         {
@@ -725,9 +735,15 @@ void delete_(vector<string> cmd)
             strcpy(c, table1.c_str());
             remove(c);
             rename("temp.txt", c);
-            SetConsoleTextAttribute(console_color, 10);
-            cout << "Rows deleted successfully" << endl;
-            SetConsoleTextAttribute(console_color, 15);
+            if(count > 0) {
+                SetConsoleTextAttribute(console_color, 10);
+                cout << count << " rows deleted successfully" << endl;
+                SetConsoleTextAttribute(console_color, 15);
+            } else {
+                SetConsoleTextAttribute(console_color, 12);
+                cout << "No match found" << endl;
+                SetConsoleTextAttribute(console_color, 15);
+            }
         }
     }
 }
@@ -740,10 +756,22 @@ void fetchTable(string &tableName, vector<string> &att, unordered_map<string, in
 
     if(!star) 
     {
-        cout << "\n";
-            for (auto x : att)
-                cout << x << "\t";
-            cout << "\n\n";
+        cout<<endl;
+        for(int i = 0; i <= att.size()*2; i++) 
+        {
+            cout<<"--------------";
+        }
+        cout << endl;
+
+        for (auto x : att) 
+        {
+            cout << "\t\t\t" << x;
+        }
+        cout << endl;
+        for(int i = 0; i <= att.size()*2; i++) {
+            cout<<"--------------";
+        }
+        cout<<endl;
     }
     
 
@@ -770,9 +798,18 @@ void select(vector<string> cmd)
     {
         vector<string> schema;
         fetchSchema(cmd[3], schema);
+        cout<<endl;
+        for(int i = 0; i < schema.size(); i++) {
+            cout<<"--------------";
+        }
+        cout<<endl;
         for (int i = 1; i < schema.size(); i += 2)
         {
             cout << "\t\t\t" << schema[i];
+        }
+        cout<<endl;
+        for(int i = 0; i < schema.size(); i++) {
+            cout<<"--------------";
         }
         cout<<endl;
         string table_name = cmd[3];
@@ -889,11 +926,15 @@ void select(vector<string> cmd)
         {
             for (int i = 0; i < lineVec.size(); i++)
             {
-                if(i%cols == 0) cout<<endl;
+                if(i != 0 && i%cols == 0) cout<<endl;
                 cout << "\t\t\t" << lineVec[i];
             }
             cout<<endl;
         }
+        for(int i = 0; i < schema.size(); i++) {
+            cout<<"--------------";
+        }
+        cout<<endl;
     }
 
     else
@@ -980,7 +1021,7 @@ void select(vector<string> cmd)
                 {
                     for (int i = 0; i < attr_list.size(); i++)
                     {
-                        cout << data[k][table_attr[attr_list[i]]] << "\t";
+                        cout << "\t\t\t" << data[k][table_attr[attr_list[i]]];
                     }
                     cout << endl;
                 }
@@ -992,18 +1033,23 @@ void select(vector<string> cmd)
             {
                 for (int i = 0; i < attr_list.size(); i++)
                 {
-                    cout << data[k][table_attr[attr_list[i]]] << "\t";
+                    cout << "\t\t\t" << data[k][table_attr[attr_list[i]]];
                 }
                 cout << endl;
             }
         }
+        for(int i = 0; i <= attr_list.size()*2; i++) {
+            cout<<"--------------";
+        }
+        cout<<endl;
     }
+    cout<<endl;
 }
 
 void helpTable()
 {
+    SetConsoleTextAttribute(console_color, 14);
     string line;
-
     schemafile.open("Schema.txt");
 
     int count = 0;
@@ -1013,17 +1059,17 @@ void helpTable()
         cout << l1 << endl;
         count++;
     }
-    if (!count)
+    if (count == 0)
     {
-        SetConsoleTextAttribute(console_color, 12);
-        cout << "Error: No tables found" << endl;
-        SetConsoleTextAttribute(console_color, 15);
+        cout << "No tables found" << endl;
     }
+    cout << endl;
+    SetConsoleTextAttribute(console_color, 15);
 }
 
 void helpCmd(vector<string> cmd)
 {
-    cout << "\n------------HELP----------------" << endl;
+    SetConsoleTextAttribute(console_color, 14);
     map<string, int> help{{"createtable", 1}, {"droptable", 2}, {"select", 3}, {"insert", 4}, {"delete", 5}, {"update", 6}};
     map<string, int>::iterator it1;
     string command = cmd[1] + (cmd.size() > 2 ? cmd[2] : "");
@@ -1032,7 +1078,6 @@ void helpCmd(vector<string> cmd)
     switch (it1->second)
     {
     case 1:
-
         cout << "\nCommand : CREATE TABLE" << endl;
         cout << "Info: Creates a new table" << endl;
         cout << "\nFormat: \nCREATE TABLE table_name ( attribute_1 attribute1_type CHECK (constraint1), \nattribute_2 attribute2_type, …, PRIMARY KEY ( attribute_1, attribute_2 ), \nFOREIGN KEY ( attribute_y ) REFERENCES table_x ( attribute_t ), \nFOREIGN KEY ( attribute_w ) REFERENCES table_y ( attribute_z )...);" << endl;
@@ -1073,6 +1118,8 @@ void helpCmd(vector<string> cmd)
         cout << "Error: Syntax Error"<<endl;
         SetConsoleTextAttribute(console_color, 15);
     }
+    cout << endl;
+    SetConsoleTextAttribute(console_color, 15);
 }
 
 void convertToVector(string input, vector<string> &v)
@@ -1136,11 +1183,11 @@ void handleCmd(vector<string> cmd)
     {
         dropTable(cmd);
     }
-    else if (cmd[0] == "help" && cmd[1] == "tables")
+    else if (cmd.size() == 2 && cmd[0] == "help" && cmd[1] == "tables")
     {
         helpTable();
     }
-    else if (cmd[0] == "help" && cmd[1] != "commands")
+    else if (cmd.size() == 2 && cmd[0] == "help" && cmd[1] != "commands")
     {
         helpCmd(cmd);
     }
@@ -1164,11 +1211,10 @@ void handleCmd(vector<string> cmd)
     {
         update(cmd);
     }
-
     else
     {
         SetConsoleTextAttribute(console_color, 12);
-        cout << "Error: Syntax Error"<<endl;
+        cout << "Error: Syntax Error"<<endl<<endl;
         SetConsoleTextAttribute(console_color, 15);
     }
 }
@@ -1177,6 +1223,7 @@ int main()
 {
     vector<string> cmd;
     string input;
+    cout<<endl<<"DMSCP> ";
     getline(cin, input);
 
     while (input != "q")
@@ -1185,8 +1232,9 @@ int main()
         // for(auto it=cmd.begin(); it!=cmd.end(); it++) cout<<*it<<endl;
 
         handleCmd(cmd);
-
         cmd.clear();
+
+        cout<<"DMSCP> ";
         getline(cin, input);
     }
 
